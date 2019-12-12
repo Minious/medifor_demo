@@ -1,0 +1,60 @@
+{
+    "images": [
+        {
+            "filename": "placeholder_1.png",
+            "manipulated": true
+        },
+        {
+            "filename": "placeholder_2.png",
+            "manipulated": true
+        },
+        {
+            "filename": "placeholder_3.png",
+            "manipulated": true
+        },
+        {
+            "filename": "placeholder_4.png",
+            "manipulated": true
+        },
+        {
+            "filename": "placeholder_5.png",
+            "manipulated": true
+        },
+        {
+            "filename": "placeholder_6.png",
+            "manipulated": true
+        },
+        {
+            "filename": "placeholder_7.png",
+            "manipulated": true
+        },
+        {
+            "filename": "placeholder_8.png",
+            "manipulated": true
+        },
+        {
+            "filename": "placeholder_9.png",
+            "manipulated": false
+        },
+        {
+            "filename": "placeholder_10.png",
+            "manipulated": false
+        },
+        {
+            "filename": "placeholder_11.png",
+            "manipulated": false
+        },
+        {
+            "filename": "placeholder_12.png",
+            "manipulated": false
+        },
+        {
+            "filename": "placeholder_13.png",
+            "manipulated": false
+        },
+        {
+            "filename": "placeholder_14.png",
+            "manipulated": false
+        }
+    ]
+}
