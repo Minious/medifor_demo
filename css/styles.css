@@ -33,3 +33,23 @@ img {
     /* border: solid 0px #0F0; */
 }
 /* img:hover { transform: scale(1.1); } */
+
+.footer {
+    padding: 20px;
+    text-align: center;
+}
+
+.footer button {
+    background-color: rgb(53, 64, 74);
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.footer button:hover {
+    background-color: rgb(81, 98, 114);
+}

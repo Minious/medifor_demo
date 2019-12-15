@@ -10,7 +10,7 @@ function shuffle(array) {
 }
 
 function createPageManipulated(data, nbImages){
-    console.log(data)
+    // console.log(data)
 
     let manipulatedImages = data.filter(imageData => imageData.manipulated);
     let notManipulatedImages = data.filter(imageData => !imageData.manipulated);
@@ -19,13 +19,40 @@ function createPageManipulated(data, nbImages){
     let nbManipulatedImages = randInt(nbImageTypeOffset, nbImages - nbImageTypeOffset);
     let nbNotManipulatedImages = nbImages - nbManipulatedImages;
 
-    let globalContainer = document.getElementById("globalContainer")
+    let globalContainer = document.getElementById("globalContainer");
+    while (globalContainer.firstChild) {
+        globalContainer.removeChild(globalContainer.firstChild);
+    }
 
     let headerTag = document.createElement("div");
     headerTag.className = "header";
     let questionTag = document.createElement("p");
     questionTag.innerText = "Which one has been manipulated?"
     headerTag.appendChild(questionTag);
+    globalContainer.appendChild(headerTag);
+
+    let footerTag = document.createElement("div");
+    footerTag.className = "footer";
+    let submitButton = document.createElement("button");
+    submitButton.innerText = "Submit";
+    submitButton.addEventListener('click', function (e) {
+        // console.log(document.getElementsByClassName("imagesContainer")[0])
+        // console.log(document.getElementsByClassName("imagesContainer")[0].childNodes)
+        Array.from(document.getElementsByClassName("imagesContainer")[0].childNodes).map(div => div.childNodes[0]).forEach(el => {
+            // console.log(el)
+            let isSelected = !!el.selectedImage;
+            let isManipulated = !!el.manipulated;
+            // console.log(el.idx, isSelected, isManipulated)
+            if(isSelected != isManipulated)
+                el.style.boxShadow = "0 0 20px 3px rgba(255, 0, 0, 1)";
+            else
+                el.style.boxShadow = "0 0 20px 3px rgba(0, 255, 0, 1)";
+
+            window.setTimeout(main, 2000);
+        });
+    });
+    footerTag.appendChild(submitButton);
+    globalContainer.appendChild(footerTag);
 
     let nbImagesColumns = Math.ceil(Math.sqrt(nbImages));
     let nbImagesRows = Math.ceil(nbImages / nbImagesColumns);
@@ -47,22 +74,26 @@ function createPageManipulated(data, nbImages){
     imagesToAppend = imagesToAppend.concat(createImagesTags(manipulatedImages, nbManipulatedImages, widthImageCell));
     imagesToAppend = imagesToAppend.concat(createImagesTags(notManipulatedImages, nbNotManipulatedImages, widthImageCell));
     shuffle(imagesToAppend)
-    imagesToAppend.forEach(imageToAppend => imagesContainerTag.appendChild(imageToAppend))
+    imagesToAppend.forEach(imageToAppend => imagesContainerTag.appendChild(imageToAppend));
 
-    globalContainer.appendChild(headerTag);
-    globalContainer.appendChild(imagesContainerTag);
-    
+    // console.log(footerTag.clientHeight)
+
+    globalContainer.insertBefore(imagesContainerTag, footerTag);
 }
 
 function createImagesTags(imageArray, nbImages, widthImageCell){
     imagesCellsTags = [];
     for(let i=0;i<nbImages;i+=1){
+        let indexImage = randInt(0, imageArray.length);
+
         let imageCellTag = document.createElement("div");
         imageCellTag.style.width = widthImageCell + "px";
 
         let imageTag = document.createElement("img");
         imageTag.style.width = widthImageCell * 0.8 + "px";
-        imageTag.src = "images/" + imageArray[randInt(0, imageArray.length)].filename;
+        imageTag.src = "images/" + imageArray[indexImage].filename;
+        imageTag.manipulated = imageArray[indexImage].manipulated;
+        imageTag.idx = indexImage;
         imageTag.addEventListener('click', function (e) {
             e.target.selectedImage = !e.target.selectedImage;
             // console.log(e.target.selectedImage)
