@@ -25,6 +25,10 @@ body {
     margin: auto;
 }
 
+.imagesContainer div {
+    display: flex;
+}
+
 img {
     display: block;
     margin: auto;
