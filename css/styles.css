@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    background-color: slategrey;
+    background-color: rgb(78, 90, 102);
 }
 
 .header {
@@ -29,14 +29,26 @@ body {
     display: flex;
 }
 
-img {
+.imagesContainer .imgCell:hover .exImg {
+    opacity: 0.5;
+    transition: opacity .2s ease-in-out;
+}
+
+.exImg {
     display: block;
     margin: auto;
     box-shadow: 0 0 20px 3px rgba(0, 0, 0, 0.3);
     transition: all .1s ease-in-out;   
     /* border: solid 0px #0F0; */
 }
-/* img:hover { transform: scale(1.1); } */
+
+.hoverImg {
+    transition: all .3s ease-in-out;
+}
+
+.hoverImg:hover {
+    transform: scale(1.2);
+}
 
 .footer {
     padding: 20px;

@@ -90,23 +90,84 @@ function createImagesTags(imageArray, nbImages, widthImageCell){
         let indexImage = randInt(0, imageArray.length);
 
         let imageCellTag = document.createElement("div");
+        imageCellTag.classList.add('imgCell');
         imageCellTag.style.width = widthImageCell + "px";
 
         let imageTag = document.createElement("img");
+        imageTag.classList.add('exImg');
         imageTag.style.width = widthImageCell * 0.8 + "px";
         imageTag.src = "images/" + imageArray[indexImage].filename;
         imageTag.manipulated = imageArray[indexImage].manipulated;
         imageTag.idx = indexImage;
-        imageTag.addEventListener('click', function (e) {
-            e.target.selectedImage = !e.target.selectedImage;
-            // console.log(e.target.selectedImage)
-            if(e.target.selectedImage)
-                e.target.style.boxShadow = "0 0 20px 3px rgba(255, 255, 255, 0.3)";
-            else
-                e.target.style.boxShadow = "0 0 20px 3px rgba(0, 0, 0, 0.3)";
-        });
+
         imageCellTag.appendChild(imageTag);
         imagesCellsTags.push(imageCellTag);
+        
+        // replacer correctement les img
+        // leur associer leur fonction
+        // ensuite faudra reprendre le submit
+
+        let absoluteBox = document.createElement('div');
+        absoluteBox.style.position = 'absolute';
+        absoluteBox.style.width = imageCellTag.style.width;
+        absoluteBox.style.display = 'flex';
+
+        // zoomImg and tickImg are squares.
+        let zoomImg = document.createElement('img');
+        zoomImg.classList.add('hoverImg');
+        zoomImg.src = 'assets/zoom-in.png';
+        zoomImg.style.width = widthImageCell * 0.2 + "px";
+        zoomImg.style.marginLeft = widthImageCell * 0.2 + "px";
+        let tickImg = document.createElement('img');
+        tickImg.classList.add('hoverImg');
+        tickImg.src = 'assets/tick.png';
+        tickImg.style.width = widthImageCell * 0.2 + "px";
+        tickImg.style.marginLeft = widthImageCell * 0.2 + "px";
+        // functions
+        zoomImg.addEventListener('click', function (e) {
+            let zoomDiv = document.createElement('div');
+            zoomDiv.style.backgroundColor = 'rgb(48, 60, 72)';
+            zoomDiv.style.position = 'absolute';
+            zoomDiv.style.top = 0;
+            zoomDiv.style.left = 0;
+            zoomDiv.style.display = 'flex';
+            zoomDiv.style.width = '100%';
+            zoomDiv.style.height = '100%';
+
+            let zoomedPic = document.createElement('img');
+            zoomedPic.style.width = '70%';
+            zoomedPic.style.margin = 'auto';
+            zoomedPic.src = imageTag.src;
+
+            zoomDiv.addEventListener('click', function (e) {
+                document.body.removeChild(zoomDiv);
+            });
+
+            zoomDiv.appendChild(zoomedPic);
+            document.body.appendChild(zoomDiv);
+        });
+        tickImg.addEventListener('click', function (e) {
+            imageTag.selectedImage = !imageTag.selectedImage;
+            if (imageTag.selectedImage) {
+                imageTag.style.boxShadow = "0 0 20px 5px rgba(255, 255, 255, 0.7)";
+            } else {
+                imageTag.style.boxShadow = "0 0 20px 5px rgba(0, 0, 0, 0.6)";
+            }
+        });
+        absoluteBox.appendChild(zoomImg);
+        absoluteBox.appendChild(tickImg);
+
+        imageCellTag.addEventListener('mouseenter', function (e) {
+            // if outside of the listener, img height is not defined yet --> jquery pls
+            let buttonsTopMargin = imageCellTag.clientHeight / 2  - zoomImg.style.width.slice(0, -2) / 2 + 'px';
+            zoomImg.style.marginTop = buttonsTopMargin;
+            tickImg.style.marginTop = buttonsTopMargin;
+            // ---
+            imageCellTag.appendChild(absoluteBox);
+        });
+        imageCellTag.addEventListener('mouseleave', function (e) {
+            imageCellTag.removeChild(absoluteBox);
+        });
     }
     return imagesCellsTags;
 }
