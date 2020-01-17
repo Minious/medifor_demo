@@ -11,8 +11,6 @@ function shuffle(array) {
 
 function createPageManipulated(data, nbImages){
     return new Promise(function(resolve, reject) {
-        // console.log(data)
-
         let manipulatedImages = data.filter(imageData => imageData.manipulated);
         let notManipulatedImages = data.filter(imageData => !imageData.manipulated);
 
@@ -37,19 +35,13 @@ function createPageManipulated(data, nbImages){
         let submitButton = document.createElement("button");
         submitButton.innerText = "Submit";
         submitButton.addEventListener('click', function (e) {
-            // console.log(document.getElementsByClassName("imagesContainer")[0])
-            // console.log(document.getElementsByClassName("imagesContainer")[0].childNodes)
             Array.from(document.getElementsByClassName("imagesContainer")[0].childNodes).map(div => div.childNodes[0]).forEach(el => {
-                // console.log(el)
                 let isSelected = !!el.selectedImage;
                 let isManipulated = !!el.manipulated;
-                // console.log(el.idx, isSelected, isManipulated)
                 if(isSelected != isManipulated)
                     el.style.boxShadow = "0 0 20px 3px rgba(255, 0, 0, 1)";
                 else
                     el.style.boxShadow = "0 0 20px 3px rgba(0, 255, 0, 1)";
-
-                // window.setTimeout(main, 2000);
                 resolve();
             });
         });
@@ -57,16 +49,11 @@ function createPageManipulated(data, nbImages){
         globalContainer.appendChild(footerTag);
 
         let nbImagesColumns = Math.ceil(Math.sqrt(nbImages));
-        let nbImagesRows = Math.ceil(nbImages / nbImagesColumns);
-        let windowWidth = window.innerWidth;
-        let windowHeight = window.innerHeight;
-        let ratioImage = 1.3;
         let widthImageCell = 200;
         let gapCell = 10;
 
         let imagesContainerTag = document.createElement("div");
         imagesContainerTag.className = "imagesContainer";
-        // imagesContainerTag.className = "imagesContainer";
         imagesContainerTag.style.display = "grid";
         imagesContainerTag.style.gridGap = gapCell + "px";
         imagesContainerTag.style.width = (nbImagesColumns * widthImageCell + (nbImagesColumns - 1) * gapCell) + "px";
@@ -77,8 +64,6 @@ function createPageManipulated(data, nbImages){
         imagesToAppend = imagesToAppend.concat(createImagesTags(notManipulatedImages, nbNotManipulatedImages, widthImageCell));
         shuffle(imagesToAppend)
         imagesToAppend.forEach(imageToAppend => imagesContainerTag.appendChild(imageToAppend));
-
-        // console.log(footerTag.clientHeight)
 
         globalContainer.insertBefore(imagesContainerTag, footerTag);
     });
@@ -96,6 +81,7 @@ function createImagesTags(imageArray, nbImages, widthImageCell){
         let imageTag = document.createElement("img");
         imageTag.classList.add('exImg');
         imageTag.style.width = widthImageCell * 0.8 + "px";
+        imageTag.style.maxHeight = imageTag.style.width;
         imageTag.src = "images/" + imageArray[indexImage].filename;
         imageTag.manipulated = imageArray[indexImage].manipulated;
         imageTag.idx = indexImage;
@@ -103,9 +89,7 @@ function createImagesTags(imageArray, nbImages, widthImageCell){
         imageCellTag.appendChild(imageTag);
         imagesCellsTags.push(imageCellTag);
         
-        // replacer correctement les img
-        // leur associer leur fonction
-        // ensuite faudra reprendre le submit
+        // TODO: rework submit
 
         let absoluteBox = document.createElement('div');
         absoluteBox.style.position = 'absolute';
@@ -117,11 +101,13 @@ function createImagesTags(imageArray, nbImages, widthImageCell){
         zoomImg.classList.add('hoverImg');
         zoomImg.src = 'assets/zoom-in.png';
         zoomImg.style.width = widthImageCell * 0.2 + "px";
+        zoomImg.style.height = zoomImg.style.width;
         zoomImg.style.marginLeft = widthImageCell * 0.2 + "px";
         let tickImg = document.createElement('img');
         tickImg.classList.add('hoverImg');
         tickImg.src = 'assets/tick.png';
         tickImg.style.width = widthImageCell * 0.2 + "px";
+        tickImg.style.height = tickImg.style.width;
         tickImg.style.marginLeft = widthImageCell * 0.2 + "px";
         // functions
         zoomImg.addEventListener('click', function (e) {
