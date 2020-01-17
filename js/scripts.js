@@ -54,7 +54,6 @@ function createPageManipulated(data, nbImages){
 
         let imagesContainerTag = document.createElement("div");
         imagesContainerTag.className = "imagesContainer";
-        imagesContainerTag.style.display = "grid";
         imagesContainerTag.style.gridGap = gapCell + "px";
         imagesContainerTag.style.width = (nbImagesColumns * widthImageCell + (nbImagesColumns - 1) * gapCell) + "px";
         imagesContainerTag.style.gridTemplateColumns = "1fr ".repeat(nbImagesColumns);
@@ -92,9 +91,8 @@ function createImagesTags(imageArray, nbImages, widthImageCell){
         // TODO: rework submit
 
         let absoluteBox = document.createElement('div');
-        absoluteBox.style.position = 'absolute';
+        absoluteBox.classList.add('absBox');
         absoluteBox.style.width = imageCellTag.style.width;
-        absoluteBox.style.display = 'flex';
 
         // zoomImg and tickImg are squares.
         let zoomImg = document.createElement('img');
@@ -112,17 +110,9 @@ function createImagesTags(imageArray, nbImages, widthImageCell){
         // functions
         zoomImg.addEventListener('click', function (e) {
             let zoomDiv = document.createElement('div');
-            zoomDiv.style.backgroundColor = 'rgb(48, 60, 72)';
-            zoomDiv.style.position = 'absolute';
-            zoomDiv.style.top = 0;
-            zoomDiv.style.left = 0;
-            zoomDiv.style.display = 'flex';
-            zoomDiv.style.width = '100%';
-            zoomDiv.style.height = '100%';
+            zoomDiv.classList.add('zoomPic')
 
             let zoomedPic = document.createElement('img');
-            zoomedPic.style.width = '70%';
-            zoomedPic.style.margin = 'auto';
             zoomedPic.src = imageTag.src;
 
             zoomDiv.addEventListener('click', function (e) {
