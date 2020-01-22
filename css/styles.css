@@ -1,6 +1,7 @@
 body {
     margin: 0;
     background-color: rgb(78, 90, 102);
+    transition: background 3s, ease-in-out;
 }
 
 .header {

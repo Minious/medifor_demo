@@ -11,6 +11,8 @@ function shuffle(array) {
 
 function createPageManipulated(data, nbImages){
     return new Promise(function(resolve, reject) {
+        document.body.style.backgroundImage = "none";
+        
         let manipulatedImages = data.filter(imageData => imageData.manipulated);
         let notManipulatedImages = data.filter(imageData => !imageData.manipulated);
 
@@ -35,6 +37,11 @@ function createPageManipulated(data, nbImages){
         let submitButton = document.createElement("button");
         submitButton.innerText = "Submit";
         submitButton.addEventListener('click', function (e) {
+            document.body.style.backgroundImage = "linear-gradient(to right, green, rgb(78, 90, 102), red)";
+            // TODO
+            // - not sure about the gradient ; maybe try to find smth else
+            // - move imgs around
+            // - compute and display partial score
             Array.from(document.getElementsByClassName("imagesContainer")[0].childNodes).map(div => div.childNodes[0]).forEach(el => {
                 let isSelected = !!el.selectedImage;
                 let isManipulated = !!el.manipulated;
@@ -87,8 +94,6 @@ function createImagesTags(imageArray, nbImages, widthImageCell){
 
         imageCellTag.appendChild(imageTag);
         imagesCellsTags.push(imageCellTag);
-        
-        // TODO: rework submit
 
         let absoluteBox = document.createElement('div');
         absoluteBox.classList.add('absBox');
@@ -180,7 +185,11 @@ function main(){
             return new Promise((resolve, reject) => {
                 setTimeout(() => resolve(), 2000);
             })
-        }).then(() => alert('DONE'));
+        }).then(
+            // TODO
+            // - display final score in a cool way
+            () => alert('DONE')
+        );
     });
 }
 
