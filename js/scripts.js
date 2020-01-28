@@ -1,3 +1,5 @@
+let scores = [];
+
 function randInt(min, max){
     return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -7,6 +9,50 @@ function shuffle(array) {
         let j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
+}
+
+function shuffleImages() {
+    // TODO
+}
+
+function buildScoreDiv() {
+    /*
+     * Idees:
+     - ne l'afficher qu'a la fin des images
+     - afficher les 3 scores en cascade puis un total ; dessiner une grille ?
+     -> introduire la suite
+     */
+    let darkDiv = document.createElement('div');
+    darkDiv.classList.add('darkFrontDiv');
+    darkDiv.style.opacity = '0.7';
+
+    let scoreDiv = document.createElement('div');
+    scoreDiv.classList.add('scoreDiv');
+
+    let p0 = document.createElement('p');
+    p0.innerText = 'Score #0: ' + scores[0] + '/2';
+    let p1 = document.createElement('p');
+    p1.innerText = 'Score #1: ' + scores[1] + '/4';
+    let p2 = document.createElement('p');
+    p2.innerText = 'Score #2: ' + scores[2] + '/9';
+    let p3 = document.createElement('p');
+    p3.innerText = 'Score #3: ' + scores[3] + '/16';
+
+    let pBlank = document.createElement('p');
+    
+    let total = scores[0] + scores[1] + scores[2] + scores[3];
+    let accuracy = Math.round(total / 31 * 10000) / 100;
+    let pTotal = document.createElement('p');
+    pTotal.innerText = 'Global accuracy: ' + accuracy + '%';
+
+    scoreDiv.appendChild(p0);
+    scoreDiv.appendChild(p1);
+    scoreDiv.appendChild(p2);
+    scoreDiv.appendChild(p3);
+    scoreDiv.appendChild(pBlank);
+    scoreDiv.appendChild(pTotal);
+    darkDiv.appendChild(scoreDiv);
+    document.body.appendChild(darkDiv);
 }
 
 function createPageManipulated(data, nbImages){
@@ -28,7 +74,7 @@ function createPageManipulated(data, nbImages){
         let headerTag = document.createElement("div");
         headerTag.className = "header";
         let questionTag = document.createElement("p");
-        questionTag.innerText = "Which one has been manipulated?"
+        questionTag.innerText = "Which one have been manipulated?"
         headerTag.appendChild(questionTag);
         globalContainer.appendChild(headerTag);
 
@@ -37,20 +83,23 @@ function createPageManipulated(data, nbImages){
         let submitButton = document.createElement("button");
         submitButton.innerText = "Submit";
         submitButton.addEventListener('click', function (e) {
+            /* TODO
+            - gradient + bouger les images suivant le score intermediaire
             document.body.style.backgroundImage = "linear-gradient(to right, green, rgb(78, 90, 102), red)";
-            // TODO
-            // - not sure about the gradient ; maybe try to find smth else
-            // - move imgs around
-            // - compute and display partial score
+            - 
+            - puis scores
+             */
+            let imgQty = document.getElementsByClassName("imagesContainer")[0].childNodes.length;
+            let currentScore = 0;
             Array.from(document.getElementsByClassName("imagesContainer")[0].childNodes).map(div => div.childNodes[0]).forEach(el => {
                 let isSelected = !!el.selectedImage;
                 let isManipulated = !!el.manipulated;
-                if(isSelected != isManipulated)
-                    el.style.boxShadow = "0 0 20px 3px rgba(255, 0, 0, 1)";
-                else
-                    el.style.boxShadow = "0 0 20px 3px rgba(0, 255, 0, 1)";
-                resolve();
+                currentScore += (isSelected == isManipulated);
+                // el.style.boxShadow = (isSelected != isManipulated ? "0 0 20px 3px rgba(255, 0, 0, 1)" : "0 0 20px 3px rgba(0, 255, 0, 1)");
             });
+            scores.push(currentScore);
+            shuffleImages(currentScore, imgQty);
+            resolve();
         });
         footerTag.appendChild(submitButton);
         globalContainer.appendChild(footerTag);
@@ -115,7 +164,7 @@ function createImagesTags(imageArray, nbImages, widthImageCell){
         // functions
         zoomImg.addEventListener('click', function (e) {
             let zoomDiv = document.createElement('div');
-            zoomDiv.classList.add('zoomPic')
+            zoomDiv.classList.add('darkFrontDiv')
 
             let zoomedPic = document.createElement('img');
             zoomedPic.src = imageTag.src;
