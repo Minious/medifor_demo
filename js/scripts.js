@@ -210,31 +210,23 @@ function loadData() {
 	});
 }
 
+function timeout(delay){
+	return new Promise((resolve, reject) => {
+		setTimeout(() => resolve(), delay);
+	})
+}
+
 function main(){
 	loadData().then(data => {
-		createPageManipulated(data, 2).then(() => {
-			return new Promise((resolve, reject) => {
-				setTimeout(() => resolve(), 2000);
-			})
-		}).then(() => {
-			return createPageManipulated(data, 4);
-		}).then(() => {
-			return new Promise((resolve, reject) => {
-				setTimeout(() => resolve(), 2000);
-			})
-		}).then(() => {
-			return createPageManipulated(data, 9);
-		}).then(() => {
-			return new Promise((resolve, reject) => {
-				setTimeout(() => resolve(), 2000);
-			})
-		}).then(() => {
-			return createPageManipulated(data, 16);
-		}).then(() => {
-			return new Promise((resolve, reject) => {
-				setTimeout(() => resolve(), 2000);
-			})
-		}).then(
+		createPageManipulated(data, 2)
+		.then(() => timeout(2000))
+		.then(() => createPageManipulated(data, 4))
+		.then(() => timeout(2000))
+		.then(() => createPageManipulated(data, 9))
+		.then(() => timeout(2000))
+		.then(() => createPageManipulated(data, 16))
+		.then(() => timeout(2000))
+		.then(
 			// TODO
 			// - display final score in a cool way
 			() => alert('DONE')
