@@ -39,57 +39,7 @@ body {
 	display: inline-block;
 	width: 100%;
 	height: 100%;
-}
-
-.imagesContainer div {
-	display: flex;
-}
-
-.imagesContainer .imgCell:hover .exImg {
-	opacity: 0.5;
-	transition: opacity .2s ease-in-out;
-}
-
-.exImg {
-	display: block;
-	margin: auto;
-	box-shadow: 0 0 20px 3px rgba(0, 0, 0, 0.3);
-	transition: all .1s ease-in-out;
-	/* border: solid 0px #0F0; */
-}
-
-.hoverImg {
-	transition: all .3s ease-in-out;
-}
-
-.hoverImg:hover {
-	transform: scale(1.2);
-}
-
-.absBox {
-	position: absolute;
-	display: flex;
-}
-
-.darkFrontDiv {
-	background-color: rgb(48, 60, 72);
-	position: absolute;
-	top: 0;
-	left: 0;
-	display: flex;
-	width: 100%;
-	height: 100%;
-}
-
-.darkFrontDiv > p {
-	color: white;
-	margin: auto;
-	font-size: 28px;
-}
-
-.darkFrontDiv > img {
-	width: 70%;
-	margin: auto;
+	position: relative;
 }
 
 .footer {
