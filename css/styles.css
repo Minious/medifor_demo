@@ -38,38 +38,55 @@ body {
 	height: 100%;
 }
 
-#content #notManipulatedArea {
+#content .selectionArea {
 	width: 100px;
-	background-color: green;
-	display: flex;
-	justify-content: center;
-}
-
-#content #notManipulatedArea p {
-	font-size: 25px;
-	writing-mode: vertical-rl;
-	color: white;
-	text-align: center;
-	transform: rotate(-180deg);
-}
-
-#content .imagesContainer {
-	width: 100%;
 	position: relative;
 }
 
-#content #manipulatedArea {
-	width: 100px;
-	background-color: red;
-	display: flex;
-	justify-content: center;
+#content #notManipulatedArea {
+	background-color: green;
 }
 
-#content #manipulatedArea p {
+#content #manipulatedArea {
+	background-color: red;
+}
+
+#content .selectionArea .selectionAreaTextContainer {
+	display: flex;
+	justify-content: center;
+	height: 100%;
+}
+
+#content .selectionArea .selectionAreaTextContainer p {
 	font-size: 25px;
 	writing-mode: vertical-rl;
 	color: white;
 	text-align: center;
+}
+
+#content #notManipulatedArea .selectionAreaTextContainer p {
+	transform: rotate(-180deg);
+}
+
+#content .selectionArea .selectionAreaImagesContainer {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	overflow: scroll;
+}
+
+#content .selectionArea .selectionAreaImagesContainer img {
+	max-width: 80px;
+	margin-top: 5px;
+}
+
+#content .imagesContainer {
+	flex: auto;
+	position: relative;
 }
 
 .footer {

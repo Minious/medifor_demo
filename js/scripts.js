@@ -140,17 +140,33 @@ function createPageManipulated(data, nbImages){
 		let imagesContainerTag = document.createElement("div");
 		imagesContainerTag.className = "imagesContainer";
 
-		let manipulatedAreaTag = document.createElement('div');
-		manipulatedAreaTag.id = 'manipulatedArea';
-		let manipulatedAreaTextTag = document.createElement('p');
-		manipulatedAreaTextTag.innerText = 'Manipulated';
-		manipulatedAreaTag.appendChild(manipulatedAreaTextTag);
+		function createSelectionArea(name, label) {
+			let selectionAreaTag = document.createElement('div');
+			selectionAreaTag.id = name + 'Area';
+			selectionAreaTag.className = 'selectionArea';
+			let selectionAreaTextContainerTag = document.createElement('div');
+			selectionAreaTextContainerTag.className = 'selectionAreaTextContainer';
+			let selectionAreaTextTag = document.createElement('p');
+			selectionAreaTextTag.innerText = label;
+			selectionAreaTextContainerTag.appendChild(selectionAreaTextTag);
 
-		let notManipulatedAreaTag = document.createElement('div');
-		notManipulatedAreaTag.id = 'notManipulatedArea';
-		let notManipulatedAreaTextTag = document.createElement('p');
-		notManipulatedAreaTextTag.innerText = 'Not Manipulated';
-		notManipulatedAreaTag.appendChild(notManipulatedAreaTextTag);
+			let selectionAreaImagesContainerTag = document.createElement('div');
+			selectionAreaImagesContainerTag.id = name + 'AreaImagesContainer';
+			selectionAreaImagesContainerTag.className = 'selectionAreaImagesContainer';
+
+			selectionAreaTag.appendChild(selectionAreaTextContainerTag);
+			selectionAreaTag.appendChild(selectionAreaImagesContainerTag);
+
+			selectionAreaTag.ondragover = function(event){
+				event.preventDefault();
+			}
+			selectionAreaTag.ondrop = imageDropAreaOnDrop(selectionAreaImagesContainerTag);
+
+			return selectionAreaTag;
+		}
+
+		let manipulatedAreaTag = createSelectionArea('manipulated', 'Manipulated');
+		let notManipulatedAreaTag = createSelectionArea('notManipulated', 'Not Manipulated');
 
 		contentTag.appendChild(notManipulatedAreaTag);
 		contentTag.appendChild(imagesContainerTag);
@@ -161,6 +177,27 @@ function createPageManipulated(data, nbImages){
 		let imagesUrlList = getListUrlImages(data, nbManipulatedImages, nbNotManipulatedImages);
 		createImageCollageLayout(imagesContainerTag, imagesUrlList);
 	});
+}
+
+function imageDropAreaOnDrop(selectionAreaImagesContainerTag){
+	return function(event){
+		let imageId = event
+			.dataTransfer
+			.getData('imageId');
+
+		let imageTag = document.getElementById(imageId);
+		let imagesContainerTag = document.getElementsByClassName('imagesContainer')[0];
+		imagesContainerTag.removeChild(imageTag);
+
+		imageTag.style.top = null;
+		imageTag.style.left = null;
+		imageTag.style.maxWidth = null;
+		imageTag.style.maxHeight = null;
+		imageTag.style.position = null;
+		selectionAreaImagesContainerTag.appendChild(imageTag);
+
+		event.preventDefault();
+	}
 }
 
 function getListUrlImages(data, nbManipulatedImages, nbNotManipulatedImages){
@@ -233,7 +270,10 @@ function createImageCollageLayout(imagesContainerTag, imagesSrc){
 			let columnIdx = i % nbImagesColumns;
 			let rowIdx = Math.floor(i / nbImagesColumns);
 
+			let imageId = 'image' + i;
+
 			let imageTag = document.createElement("img");
+			imageTag.id = imageId
 			imageTag.src = imageSize.url;
 			imageTag.style.position = 'absolute';
 			imageTag.style.top = rowIdx * (heightRow + gapWidth) + 'px';
@@ -241,14 +281,9 @@ function createImageCollageLayout(imagesContainerTag, imagesSrc){
 			imageTag.style.maxWidth = widthColumn + 'px';
 			imageTag.style.maxHeight = heightRow + 'px';
 
-			imageTag.addEventListener('click', function (e) {
-				imageTag.selectedImage = !imageTag.selectedImage;
-				if (imageTag.selectedImage) {
-					imageTag.style.boxShadow = "0 0 20px 5px rgba(255, 255, 255, 0.7)";
-				} else {
-					imageTag.style.boxShadow = "0 0 20px 5px rgba(0, 0, 0, 0.6)";
-				}
-			});
+			imageTag.ondragstart = function(event) {
+				event.dataTransfer.setData('imageId', imageId);
+			}
 
 			return imageTag;
 		});
