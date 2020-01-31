@@ -129,6 +129,11 @@ function createPageManipulated(data, nbImages){
 
 			scores.push(currentScore);
 			shuffleImages(currentScore, imgQty);
+
+			document.getElementById('content').removeChild(document.getElementsByClassName('imagesContainer')[0]);
+			let selectionAreas = document.getElementsByClassName('selectionArea');
+			[].forEach.call(selectionAreas, selectionAreaTag => selectionAreaTag.style.flex = 'auto')
+
 			resolve();
 		});
 		footerTag.appendChild(submitButton);
@@ -276,8 +281,11 @@ function createImageCollageLayout(imagesContainerTag, imagesSrc){
 			imageTag.id = imageId
 			imageTag.src = imageSize.url;
 			imageTag.style.position = 'absolute';
-			imageTag.style.top = rowIdx * (heightRow + gapWidth) + 'px';
-			imageTag.style.left = columnIdx * (widthColumn + gapWidth) + leftMargin + 'px';
+			let x = columnIdx * (widthColumn + gapWidth) + leftMargin;
+			let y = rowIdx * (heightRow + gapWidth);
+			let imageSizeClamped = clampImageSize(imageSize.width, imageSize.height, widthColumn, heightRow);
+			imageTag.style.left = x + (widthColumn - imageSizeClamped.width) / 2 + 'px';
+			imageTag.style.top = y + (heightRow - imageSizeClamped.height) / 2 + 'px';
 			imageTag.style.maxWidth = widthColumn + 'px';
 			imageTag.style.maxHeight = heightRow + 'px';
 
@@ -289,6 +297,24 @@ function createImageCollageLayout(imagesContainerTag, imagesSrc){
 		});
 		imagesTags.forEach(imageTag => imagesContainerTag.appendChild(imageTag));
 	});
+}
+
+function clampImageSize(imageWidth, imageHeight, targetWidth, targetHeight){
+	let widthRatio = imageWidth / targetWidth;
+	let widthRatioFixedImageHeight = imageHeight / widthRatio;
+	if(widthRatioFixedImageHeight < targetHeight){
+		return {
+			'width': targetWidth,
+			'height': widthRatioFixedImageHeight
+		}
+	} else {
+		let heightRatio = imageHeight / targetHeight;
+		let heightRatioFixedImageWidth = imageWidth / heightRatio;
+		return {
+			'width': heightRatioFixedImageWidth,
+			'height': targetHeight
+		}
+	}
 }
 
 function createImagesTags(imageArray, imagesContainerTag){
