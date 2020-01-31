@@ -55,6 +55,34 @@ function buildScoreDiv() {
 	document.body.appendChild(darkDiv);
 }
 
+function animatePos(el, x1, y1, duration) {
+	let frameRate = 60;
+	let interval = 1 / frameRate;
+	let t = 0;
+
+	let idInterval = setInterval(frame, interval * 1000);
+
+	let x0 = parseFloat(el.style.left.slice(0, -2));
+	let y0 = parseFloat(el.style.top.slice(0, -2));
+
+	function easeInOutCubic(t){
+		return t<.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1
+	}
+
+	function frame() {
+		if (t >= duration) {
+			clearInterval(idInterval);
+		} else {
+			t += interval;
+			let easet = easeInOutCubic(t / duration)
+			let x = x0 + (x1 - x0) * easet;
+			let y = y0 + (y1 - y0) * easet;
+			el.style.left = x + 'px';
+			el.style.top = y + 'px';
+		}
+	}
+}
+
 function createPageManipulated(data, nbImages){
 	return new Promise(function(resolve, reject) {
 		document.body.style.backgroundImage = "none";
@@ -88,22 +116,23 @@ function createPageManipulated(data, nbImages){
 			 */
 			let imgQty = document.getElementsByClassName("imagesContainer")[0].childNodes.length;
 			let currentScore = 0;
+
 			Array.from(document.getElementsByClassName("imagesContainer")[0].childNodes).forEach(el => {
 				let isSelected = !!el.selectedImage;
 				let isManipulated = !!el.manipulated;
 				currentScore += (isSelected == isManipulated);
-				// el.style.boxShadow = (isSelected != isManipulated ? "0 0 20px 3px rgba(255, 0, 0, 1)" : "0 0 20px 3px rgba(0, 255, 0, 1)");
+
+				let x = randInt(0, imagesContainerTag.clientWidth);
+				let y = randInt(0, imagesContainerTag.clientHeight);
+				animatePos(el, x, y, 1);
 			});
+
 			scores.push(currentScore);
 			shuffleImages(currentScore, imgQty);
 			resolve();
 		});
 		footerTag.appendChild(submitButton);
 		globalContainer.appendChild(footerTag);
-
-		let nbImagesColumns = Math.ceil(Math.sqrt(nbImages));
-		let widthImageCell = 200;
-		let gapCell = 10;
 
 		let imagesContainerTag = document.createElement("div");
 		imagesContainerTag.className = "imagesContainer";
