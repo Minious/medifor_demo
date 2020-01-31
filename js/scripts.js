@@ -134,9 +134,29 @@ function createPageManipulated(data, nbImages){
 		footerTag.appendChild(submitButton);
 		globalContainer.appendChild(footerTag);
 
+		let contentTag = document.createElement("div");
+		contentTag.id = 'content';
+
 		let imagesContainerTag = document.createElement("div");
 		imagesContainerTag.className = "imagesContainer";
-		globalContainer.insertBefore(imagesContainerTag, footerTag);
+
+		let manipulatedAreaTag = document.createElement('div');
+		manipulatedAreaTag.id = 'manipulatedArea';
+		let manipulatedAreaTextTag = document.createElement('p');
+		manipulatedAreaTextTag.innerText = 'Manipulated';
+		manipulatedAreaTag.appendChild(manipulatedAreaTextTag);
+
+		let notManipulatedAreaTag = document.createElement('div');
+		notManipulatedAreaTag.id = 'notManipulatedArea';
+		let notManipulatedAreaTextTag = document.createElement('p');
+		notManipulatedAreaTextTag.innerText = 'Not Manipulated';
+		notManipulatedAreaTag.appendChild(notManipulatedAreaTextTag);
+
+		contentTag.appendChild(notManipulatedAreaTag);
+		contentTag.appendChild(imagesContainerTag);
+		contentTag.appendChild(manipulatedAreaTag);
+
+		globalContainer.insertBefore(contentTag, footerTag);
 
 		let imagesUrlList = getListUrlImages(data, nbManipulatedImages, nbNotManipulatedImages);
 		createImageCollageLayout(imagesContainerTag, imagesUrlList);
@@ -220,8 +240,6 @@ function createImageCollageLayout(imagesContainerTag, imagesSrc){
 			imageTag.style.left = columnIdx * (widthColumn + gapWidth) + leftMargin + 'px';
 			imageTag.style.maxWidth = widthColumn + 'px';
 			imageTag.style.maxHeight = heightRow + 'px';
-
-			imageTag.manipulated = true; // CACA
 
 			imageTag.addEventListener('click', function (e) {
 				imageTag.selectedImage = !imageTag.selectedImage;
