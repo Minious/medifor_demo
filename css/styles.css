@@ -82,9 +82,29 @@ body {
 	overflow: scroll;
 }
 
+#content .selectionArea .selectionAreaImagesContainer > div {
+	margin-top: 5px;
+	position: relative;
+}
+
 #content .selectionArea .selectionAreaImagesContainer img {
 	max-width: 80px;
-	margin-top: 5px;
+	display: block;
+}
+
+#content .selectionArea .selectionAreaImagesContainer div.wrongAnswerContainer {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+#content .selectionArea .selectionAreaImagesContainer div.wrongAnswerContainer img {
+	width: 40px;
 }
 
 #content .imagesContainer {

@@ -114,7 +114,7 @@ function createPageManipulated(data, nbImages){
 			- 
 			- puis scores
 			 */
-			let imgQty = document.getElementsByClassName("imagesContainer")[0].childNodes.length;
+			// let imgQty = document.getElementsByClassName("imagesContainer")[0].childNodes.length;
 			let currentScore = 0;
 
 			Array.from(document.getElementsByClassName("imagesContainer")[0].childNodes).forEach(el => {
@@ -128,11 +128,39 @@ function createPageManipulated(data, nbImages){
 			});
 
 			scores.push(currentScore);
-			shuffleImages(currentScore, imgQty);
+			// shuffleImages(currentScore, imgQty);
 
 			document.getElementById('content').removeChild(document.getElementsByClassName('imagesContainer')[0]);
-			let selectionAreas = document.getElementsByClassName('selectionArea');
-			[].forEach.call(selectionAreas, selectionAreaTag => selectionAreaTag.style.flex = 'auto')
+			let selectionAreas = [].slice.call(document.getElementsByClassName('selectionArea'));
+			selectionAreas.forEach(selectionAreaTag => selectionAreaTag.style.flex = 'auto')
+			let selectionAreasImagesContainers = [].slice.call(document.getElementsByClassName('selectionAreaImagesContainer'));
+			selectionAreasImagesContainers.forEach(selectionAreaImagesContainerTag => {
+				selectionAreaImagesContainerTag.style.flexWrap = 'wrap';
+				selectionAreaImagesContainerTag.style.alignContent = 'center';
+			});
+			let imagesContainerInSelectionAreasImagesContainers = selectionAreasImagesContainers.map(
+				selectionAreaImagesContainerTag => [].slice.call(selectionAreaImagesContainerTag.childNodes)
+			).flat();
+			imagesContainerInSelectionAreasImagesContainers.forEach(imageContainerTag => {
+				imageContainerTag.style.marginRight = '5px';
+
+				let imageName = imageContainerTag.childNodes[0].src.split('/').last();
+				let isManipulated = data.filter(imageData => imageData.filename == imageName)[0].manipulated;
+				let isInManipulatedArea = imageContainerTag.parentNode.id == 'manipulatedAreaImagesContainer';
+				let isWrongAnswer = isManipulated != isInManipulatedArea;
+
+				if(isWrongAnswer){
+					let wrongAnswerContainerTag = document.createElement('div');
+					wrongAnswerContainerTag.className = 'wrongAnswerContainer';
+					let wrongAnswerImageTag = document.createElement('img');
+					wrongAnswerImageTag.src = 'assets/close.png';
+					wrongAnswerContainerTag.appendChild(wrongAnswerImageTag);
+					imageContainerTag.appendChild(wrongAnswerContainerTag);
+				}
+			});
+
+			let selectionAreaTextContainers = [].slice.call(document.getElementsByClassName('selectionAreaTextContainer'))
+			selectionAreaTextContainers.forEach(el => el.parentNode.removeChild(el))
 
 			resolve();
 		});
@@ -194,12 +222,17 @@ function imageDropAreaOnDrop(selectionAreaImagesContainerTag){
 		let imagesContainerTag = document.getElementsByClassName('imagesContainer')[0];
 		imagesContainerTag.removeChild(imageTag);
 
+		let imageContainerTag = document.createElement('div');
+		imageContainerTag.className = 'imageContainer';
+
 		imageTag.style.top = null;
 		imageTag.style.left = null;
 		imageTag.style.maxWidth = null;
 		imageTag.style.maxHeight = null;
 		imageTag.style.position = null;
-		selectionAreaImagesContainerTag.appendChild(imageTag);
+
+		imageContainerTag.appendChild(imageTag);
+		selectionAreaImagesContainerTag.appendChild(imageContainerTag);
 
 		event.preventDefault();
 	}
@@ -336,6 +369,12 @@ function timeout(delay){
 }
 
 function main(){
+	if (!Array.prototype.last){
+		Array.prototype.last = function(){
+			return this[this.length - 1];
+		};
+	};
+
 	loadData().then(data => {
 		createPageManipulated(data, 2)
 		.then(() => timeout(2000))
