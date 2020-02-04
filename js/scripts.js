@@ -108,7 +108,7 @@ function createFooter(){
 	return footerTag;
 }
 
-function createContent(){
+function createContent(pageState){
 	let contentTag = document.createElement("div");
 	contentTag.id = 'content';
 
@@ -135,7 +135,7 @@ function createContent(){
 		selectionAreaTag.ondragover = function(event){
 			event.preventDefault();
 		}
-		selectionAreaTag.ondrop = imageDropAreaOnDrop(selectionAreaImagesContainerTag);
+		selectionAreaTag.ondrop = imageDropAreaOnDrop(name, selectionAreaImagesContainerTag, pageState);
 
 		return selectionAreaTag;
 	}
@@ -150,7 +150,7 @@ function createContent(){
 	return contentTag;
 }
 
-function onSubmitButtonClick(resolve, jsonData){
+function onSubmitButtonClick(resolve, jsonData, pageState){
 	return function (e) {
 		let imagesContainerTag = document.getElementById('imagesContainer');
 		document.getElementById('content').removeChild(imagesContainerTag);
@@ -163,19 +163,17 @@ function onSubmitButtonClick(resolve, jsonData){
 			selectionAreaImagesContainerTag.style.flexWrap = 'wrap';
 			selectionAreaImagesContainerTag.style.alignContent = 'center';
 		});
-		let imagesContainerInSelectionAreasImagesContainers = selectionAreasImagesContainers.map(
-			selectionAreaImagesContainerTag => [].slice.call(selectionAreaImagesContainerTag.childNodes)
-		).flat();
-		imagesContainerInSelectionAreasImagesContainers.forEach(imageContainerTag => {
-			imageContainerTag.style.marginRight = '5px';
 
-			let imageName = imageContainerTag.childNodes[0].src.split('/').last();
-			let isManipulated = jsonData.filter(imageData => imageData.filename == imageName)[0].manipulated;
-			let isInManipulatedArea = imageContainerTag.parentNode.id == 'manipulatedAreaImagesContainer';
-			let isWrongAnswer = isManipulated != isInManipulatedArea;
+		function displayAnswer(imageData, isManipulatedArea){
+			let imageTag = imageData.tag;
+			let isManipulated = imageData.manipulated;
+			let imageContainerTag = imageTag.parentNode;
+
+			imageContainerTag.style.marginRight = '5px';
 
 			let answerContainerTag = document.createElement('div');
 			let answerImageTag = document.createElement('img');
+			let isWrongAnswer = isManipulatedArea == isManipulated;
 			if(isWrongAnswer){
 				answerContainerTag.className = 'answerContainer wrongAnswerContainer';
 				answerImageTag.src = 'assets/close.png';
@@ -185,7 +183,10 @@ function onSubmitButtonClick(resolve, jsonData){
 			}
 			answerContainerTag.appendChild(answerImageTag);
 			imageContainerTag.appendChild(answerContainerTag);
-		});
+		}
+
+		Object.values(pageState.images.manipulatedArea).forEach(imageData => displayAnswer(imageData, true));
+		Object.values(pageState.images.notManipulatedArea).forEach(imageData => displayAnswer(imageData, false));
 
 		let selectionAreaTextContainers = [].slice.call(document.getElementsByClassName('selectionAreaTextContainer'))
 		selectionAreaTextContainers.forEach(el => el.parentNode.removeChild(el))
@@ -197,9 +198,9 @@ function onSubmitButtonClick(resolve, jsonData){
 async function createPageManipulated(jsonData, nbImages){
 	let pageState = {
 		'images': {
-			'inStartingArea': {},
-			'inManipulatedArea': {},
-			'inNotManipulatedArea': {},
+			'startingArea': {},
+			'manipulatedArea': {},
+			'notManipulatedArea': {},
 		}
 	};
 
@@ -215,7 +216,7 @@ async function createPageManipulated(jsonData, nbImages){
 		let footerTag = createFooter();
 		globalContainer.appendChild(footerTag);
 
-		let contentTag = createContent();
+		let contentTag = createContent(pageState);
 		globalContainer.insertBefore(contentTag, footerTag);
 
 		let minimalAmountOfImagesPerTypeRatio = 0.2;
@@ -224,15 +225,18 @@ async function createPageManipulated(jsonData, nbImages){
 		await createImageCollageLayout(imagesUrlList, jsonData, pageState);
 
 		let submitButton = document.getElementById('submitButton');
-		submitButton.addEventListener('click', onSubmitButtonClick(resolve, jsonData));
+		submitButton.addEventListener('click', onSubmitButtonClick(resolve, jsonData, pageState));
 	});
 }
 
-function imageDropAreaOnDrop(selectionAreaImagesContainerTag){
+function imageDropAreaOnDrop(nameArea, selectionAreaImagesContainerTag, pageState){
 	return function(event){
 		let imageId = event
 			.dataTransfer
 			.getData('imageId');
+		let imageSrc = event
+			.dataTransfer
+			.getData('imageSrc');
 
 		let imageTag = document.getElementById(imageId);
 		let imagesContainerTag = document.getElementById('imagesContainer');
@@ -241,14 +245,17 @@ function imageDropAreaOnDrop(selectionAreaImagesContainerTag){
 		let imageContainerTag = document.createElement('div');
 		imageContainerTag.className = 'imageContainer';
 
-		imageTag.style.top = null;
-		imageTag.style.left = null;
-		imageTag.style.maxWidth = null;
-		imageTag.style.maxHeight = null;
-		imageTag.style.position = null;
+		let newImageTag = document.createElement('img');
+		newImageTag.src = imageTag.src;
+		newImageTag.id = imageTag.id;
 
-		imageContainerTag.appendChild(imageTag);
+		imageContainerTag.appendChild(newImageTag);
 		selectionAreaImagesContainerTag.appendChild(imageContainerTag);
+
+		let newCategory = nameArea == 'manipulated' ? 'manipulatedArea' : 'notManipulatedArea';
+		pageState.images[newCategory][imageSrc] = pageState.images.startingArea[imageSrc];
+		delete pageState.images.startingArea[imageSrc];
+		pageState.images[newCategory][imageSrc].tag = newImageTag;
 
 		event.preventDefault();
 	}
@@ -327,10 +334,27 @@ async function createImageCollageLayout(imagesSrc, jsonData, pageState){
 
 	Object.entries(imagesSize).forEach(([imageSrc, imageSize], imageIdx) => {
 		let imageTag = createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, widthColumn, heightRow, gapWidth, leftMargin);
-		pageState['images']['inStartingArea'][imageSrc] = {
+		pageState.images.startingArea[imageSrc] = {
 			'tag': imageTag,
-			'manipulated': jsonData.filter(imageData => imageData.filename == imageSrc)[0]['manipulated'],
+			'manipulated': jsonData.filter(imageData => imageData.filename == imageSrc)[0].manipulated,
 		};
+
+		// Zoom
+		imageTag.addEventListener('click', function (e) {
+			let zoomDiv = document.createElement('div');
+			zoomDiv.id = 'darkFrontDiv';
+
+			let zoomedImage = document.createElement('img');
+			zoomedImage.src = imageTag.src;
+
+			zoomDiv.addEventListener('click', function (e) {
+				document.body.removeChild(zoomDiv);
+			});
+
+			zoomDiv.appendChild(zoomedImage);
+			document.body.appendChild(zoomDiv);
+		});
+
 		imagesContainerTag.appendChild(imageTag);
 	});
 }
@@ -355,6 +379,7 @@ function createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, wi
 
 	imageTag.ondragstart = function(event) {
 		event.dataTransfer.setData('imageId', imageId);
+		event.dataTransfer.setData('imageSrc', imageSrc);
 	}
 
 	return imageTag;
