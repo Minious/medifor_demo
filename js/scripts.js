@@ -261,18 +261,26 @@ function imageDropAreaOnDrop(nameArea, selectionAreaImagesContainerTag, pageStat
 	}
 }
 
-function getListUrlImages(data, nbManipulatedImages, nbNotManipulatedImages){
-	let manipulatedImages = data.filter(imageData => imageData.manipulated);
-	let notManipulatedImages = data.filter(imageData => !imageData.manipulated);
+var getListUrlImages = function(){
+	let usedImages = [];
 
-	manipulatedImages = shuffle(manipulatedImages);
-	notManipulatedImages = shuffle(notManipulatedImages);
+	return function(data, nbManipulatedImages, nbNotManipulatedImages){
+		let availableImages = data.filter(imageData => !usedImages.includes(imageData.filename));
 
-	let listImages = manipulatedImages.slice(0, nbManipulatedImages).concat(notManipulatedImages.slice(0, nbNotManipulatedImages));
-	listImages = shuffle(listImages);
+		let manipulatedImages = availableImages.filter(imageData => imageData.manipulated);
+		let notManipulatedImages = availableImages.filter(imageData => !imageData.manipulated);
 
-	return listImages.map(imageData => imageData.filename);
-}
+		manipulatedImages = shuffle(manipulatedImages);
+		notManipulatedImages = shuffle(notManipulatedImages);
+
+		let listImages = manipulatedImages.slice(0, nbManipulatedImages).concat(notManipulatedImages.slice(0, nbNotManipulatedImages));
+		listImages = shuffle(listImages).map(imageData => imageData.filename);
+
+		usedImages = usedImages.concat(listImages);
+
+		return listImages;
+	}
+}();
 
 async function getImagesSize(imagesSrc){
 	return new Promise((resolve, reject) => {
