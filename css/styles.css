@@ -1,3 +1,11 @@
+html {
+	height: 100%;
+}
+
+p {
+	margin: 0;
+}
+
 body {
 	background-color: rgb(78, 90, 102);
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -7,99 +15,124 @@ body {
 
 #globalContainer {
 	height: 100%;
-	opacity: 1;
-	transition: opacity .5s ease-in-out;
+	display: flex;
+	flex-direction: column;
 }
 
-.header {
+#header {
 	height: 100px;
 	width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
 }
 
-.header p {
+#header p {
 	font-size: 40px;
-}
-
-.header p {
-	margin: 0;
 	text-align: center;
-	vertical-align: middle;
-	line-height: 100px;
 	color: #FFF;
 }
 
-.imagesContainer {
-	margin: auto;
-	display: grid;
-}
-
-.imagesContainer div {
+#content {
 	display: flex;
+	height: 100%;
+	justify-content: space-between;
 }
 
-.imagesContainer .imgCell:hover .exImg {
-	opacity: 0.5;
-	transition: opacity .2s ease-in-out;
+#content .selectionArea {
+	width: 100px;
+	position: relative;
+	transition: flex .5s ease-in-out;
+
 }
 
-.exImg {
-	display: block;
-	margin: auto;
-	box-shadow: 0 0 20px 3px rgba(0, 0, 0, 0.3);
-	transition: all .1s ease-in-out;
-	/* border: solid 0px #0F0; */
+#content #notManipulatedArea {
+	background-color: green;
 }
 
-.hoverImg {
-	transition: all .3s ease-in-out;
+#content #manipulatedArea {
+	background-color: red;
 }
 
-.hoverImg:hover {
-	transform: scale(1.2);
-}
-
-.absBox {
-	position: absolute;
+#content .selectionArea .selectionAreaTextContainer {
 	display: flex;
-}
-
-.darkFrontDiv {
-	background-color: rgb(48, 60, 72);
-	position: absolute;
-	top: 0;
-	left: 0;
-	display: flex;
-	width: 100%;
+	justify-content: center;
 	height: 100%;
 }
 
-.darkFrontDiv > p {
+#content .selectionArea .selectionAreaTextContainer p {
+	font-size: 25px;
+	writing-mode: vertical-rl;
 	color: white;
-	margin: auto;
-	font-size: 28px;
+	text-align: center;
 }
 
-.darkFrontDiv > img {
-	width: 70%;
-	margin: auto;
+#content #notManipulatedArea .selectionAreaTextContainer p {
+	transform: rotate(-180deg);
 }
 
-.footer {
+#content .selectionArea .selectionAreaImagesContainer {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	overflow: scroll;
+}
+
+#content .selectionArea .selectionAreaImagesContainer > div {
+	margin-top: 5px;
+	position: relative;
+}
+
+#content .selectionArea .selectionAreaImagesContainer img {
+	max-width: 80px;
+	display: block;
+}
+
+#content .selectionArea .selectionAreaImagesContainer div.answerContainer {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+#content .selectionArea .selectionAreaImagesContainer div.answerContainer img {
+	width: 40px;
+}
+
+#content .selectionArea .selectionAreaImagesContainer div.rightAnswerContainer {
+	background-color: rgba(0,255,0,0.4);
+}
+
+#content .selectionArea .selectionAreaImagesContainer div.wrongAnswerContainer {
+	background-color: rgba(255,0,0,0.4);
+}
+
+#content .selectionArea .selectionAreaImagesContainer div.wrongAnswerContainer img {
+	filter: invert(1);
+}
+
+#content #imagesContainer {
+	flex: auto;
+	position: relative;
+}
+
+#footer {
 	padding: 20px;
 	text-align: center;
 }
 
-.footer button {
+#footer button {
 	background-color: rgb(53, 64, 74);
 	border: none;
 	color: white;
 	padding: 15px 32px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
 	font-size: 16px;
-}
-
-.footer button:hover {
-	background-color: rgb(81, 98, 114);
 }
