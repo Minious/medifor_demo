@@ -327,13 +327,15 @@ async function createImageCollageLayout(imagesSrc, jsonData, pageState){
 	let widthColumn = Math.min(((imagesContainerTag.clientWidth - 2 * minLeftMargin) - (nbImagesColumns - 1) * gapWidth) / nbImagesColumns, maxWidthColumn);
 
 	let widthRows = nbImagesColumns * widthColumn + (nbImagesColumns - 1) * gapWidth;
+	let heightColumns = nbImagesRows * heightRow + (nbImagesRows - 1) * gapWidth;
 
 	let leftMargin = (imagesContainerTag.clientWidth - widthRows) / 2;
+	let topMargin = (imagesContainerTag.clientHeight - heightColumns) / 2;
 
 	let imagesSize = await getImagesSize(imagesSrc);
 
 	Object.entries(imagesSize).forEach(([imageSrc, imageSize], imageIdx) => {
-		let imageTag = createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, widthColumn, heightRow, gapWidth, leftMargin);
+		let imageTag = createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, widthColumn, heightRow, gapWidth, leftMargin, topMargin);
 		pageState.images.startingArea[imageSrc] = {
 			'tag': imageTag,
 			'manipulated': jsonData.filter(imageData => imageData.filename == imageSrc)[0].manipulated,
@@ -359,7 +361,7 @@ async function createImageCollageLayout(imagesSrc, jsonData, pageState){
 	});
 }
 
-function createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, widthColumn, heightRow, gapWidth, leftMargin){
+function createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, widthColumn, heightRow, gapWidth, leftMargin, topMargin){
 	let columnIdx = imageIdx % nbImagesColumns;
 	let rowIdx = Math.floor(imageIdx / nbImagesColumns);
 
@@ -369,7 +371,7 @@ function createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, wi
 	imageTag.id = imageId
 	imageTag.src = '/images/' + imageSrc;
 	let x = columnIdx * (widthColumn + gapWidth) + leftMargin;
-	let y = rowIdx * (heightRow + gapWidth);
+	let y = rowIdx * (heightRow + gapWidth) + topMargin;
 	let imageSizeClamped = clampImageSize(imageSize.width, imageSize.height, widthColumn, heightRow);
 	imageTag.style.position = 'absolute';
 	imageTag.style.left = x + (widthColumn - imageSizeClamped.width) / 2 + 'px';
