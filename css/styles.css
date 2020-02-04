@@ -123,6 +123,11 @@ body {
 	filter: invert(1);
 }
 
+#content #imagesContainer {
+	flex: auto;
+	position: relative;
+}
+
 #graphDiv {
 	margin-left: 15%;
 	width: 70%;
