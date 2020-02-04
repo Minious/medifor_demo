@@ -338,6 +338,23 @@ async function createImageCollageLayout(imagesSrc, jsonData, pageState){
 			'tag': imageTag,
 			'manipulated': jsonData.filter(imageData => imageData.filename == imageSrc)[0].manipulated,
 		};
+
+		// Zoom
+		imageTag.addEventListener('click', function (e) {
+			let zoomDiv = document.createElement('div');
+			zoomDiv.id = 'darkFrontDiv';
+
+			let zoomedImage = document.createElement('img');
+			zoomedImage.src = imageTag.src;
+
+			zoomDiv.addEventListener('click', function (e) {
+				document.body.removeChild(zoomDiv);
+			});
+
+			zoomDiv.appendChild(zoomedImage);
+			document.body.appendChild(zoomDiv);
+		});
+
 		imagesContainerTag.appendChild(imageTag);
 	});
 }
