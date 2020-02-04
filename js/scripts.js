@@ -1,58 +1,28 @@
-let scores = [];
-
+/**
+ * Returns an random integer between min (included) and max (excluded)
+ * 
+ * @param {integer} min lower boundary (included)
+ * @param {integer} max upper boundary (excluded)
+ * 
+ * @returns {integer} A random integer
+ */
 function randInt(min, max){
 	return Math.floor(Math.random() * (max - min)) + min;
 }
 
+/**
+ * Shuffles an array without changing the existing one but instead
+ * returning a new array.
+ * 
+ * @param {array} array The array to shuffle
+ */
 function shuffle(array) {
+	array = array.slice();
 	for (let i = array.length - 1; i > 0; i--) {
 		let j = Math.floor(Math.random() * (i + 1));
 		[array[i], array[j]] = [array[j], array[i]];
 	}
-}
-
-function shuffleImages() {
-	// TODO
-}
-
-function buildScoreDiv() {
-	/*
-	 * Idees:
-	 - ne l'afficher qu'a la fin des images
-	 - afficher les 3 scores en cascade puis un total ; dessiner une grille ?
-	 -> introduire la suite
-	 */
-	let darkDiv = document.createElement('div');
-	darkDiv.classList.add('darkFrontDiv');
-	darkDiv.style.opacity = '0.7';
-
-	let scoreDiv = document.createElement('div');
-	scoreDiv.classList.add('scoreDiv');
-
-	let p0 = document.createElement('p');
-	p0.innerText = 'Score #0: ' + scores[0] + '/2';
-	let p1 = document.createElement('p');
-	p1.innerText = 'Score #1: ' + scores[1] + '/4';
-	let p2 = document.createElement('p');
-	p2.innerText = 'Score #2: ' + scores[2] + '/9';
-	let p3 = document.createElement('p');
-	p3.innerText = 'Score #3: ' + scores[3] + '/16';
-
-	let pBlank = document.createElement('p');
-	
-	let total = scores[0] + scores[1] + scores[2] + scores[3];
-	let accuracy = Math.round(total / 31 * 10000) / 100;
-	let pTotal = document.createElement('p');
-	pTotal.innerText = 'Global accuracy: ' + accuracy + '%';
-
-	scoreDiv.appendChild(p0);
-	scoreDiv.appendChild(p1);
-	scoreDiv.appendChild(p2);
-	scoreDiv.appendChild(p3);
-	scoreDiv.appendChild(pBlank);
-	scoreDiv.appendChild(pTotal);
-	darkDiv.appendChild(scoreDiv);
-	document.body.appendChild(darkDiv);
+	return array;
 }
 
 function animatePos(el, x1, y1, duration) {
@@ -83,132 +53,178 @@ function animatePos(el, x1, y1, duration) {
 	}
 }
 
-function createPageManipulated(data, nbImages){
-	return new Promise(function(resolve, reject) {
-		document.body.style.backgroundImage = "none";
+/**
+ * Returns the number of images of each type (manipulated and not manipulated)
+ * based on the total number of images and a minimum offset. The offset is a
+ * the minimal percentage of number of each type of image (Ex: for an offset of
+ * 0.2 for a total of 10 images, the minimal amount of images of each type is
+ * going to be 2).
+ * 
+ * @param {integer} nbImages Total number of images
+ * @param {float} offset Percentage being the minimal amount of images of each type
+ * 
+ * @returns {object} An object with two integer properties 'nbManipulatedImages' and
+ * 'nbNotManipulatedImages'
+ */
+function getNbImages(nbImages, offset){
+	let nbImageTypeOffset = Math.ceil(nbImages * offset)
+	let nbManipulatedImages = randInt(nbImageTypeOffset, nbImages - nbImageTypeOffset);
+	let nbNotManipulatedImages = nbImages - nbManipulatedImages;
+	return {nbManipulatedImages, nbNotManipulatedImages};
+}
 
-		let nbImageTypeOffset = Math.ceil(nbImages * 0.2)
-		let nbManipulatedImages = randInt(nbImageTypeOffset, nbImages - nbImageTypeOffset);
-		let nbNotManipulatedImages = nbImages - nbManipulatedImages;
+/**
+ * Create the header div tag containing the title of the page.
+ * 
+ * @returns {HTMLDivElement} The header div tag
+ */
+function createHeader(){
+	let headerTag = document.createElement("div");
+	headerTag.id = "header";
 
+	let questionTag = document.createElement("p");
+	questionTag.innerText = "Which ones have been manipulated?";
+
+	headerTag.appendChild(questionTag);
+
+	return headerTag;
+}
+
+/**
+ * Create the footer div tag containing the submit button.
+ * 
+ * @returns {HTMLDivElement} The footer div tag
+ */
+function createFooter(){
+	let footerTag = document.createElement("div");
+	footerTag.id = "footer";
+
+	let submitButton = document.createElement("button");
+	submitButton.id = 'submitButton';
+	submitButton.innerText = "Submit";
+
+	footerTag.appendChild(submitButton);
+
+	return footerTag;
+}
+
+function createContent(){
+	let contentTag = document.createElement("div");
+	contentTag.id = 'content';
+
+	let imagesContainerTag = document.createElement("div");
+	imagesContainerTag.id = "imagesContainer";
+
+	function createSelectionArea(name, label) {
+		let selectionAreaTag = document.createElement('div');
+		selectionAreaTag.id = name + 'Area';
+		selectionAreaTag.className = 'selectionArea';
+		let selectionAreaTextContainerTag = document.createElement('div');
+		selectionAreaTextContainerTag.className = 'selectionAreaTextContainer';
+		let selectionAreaTextTag = document.createElement('p');
+		selectionAreaTextTag.innerText = label;
+		selectionAreaTextContainerTag.appendChild(selectionAreaTextTag);
+
+		let selectionAreaImagesContainerTag = document.createElement('div');
+		selectionAreaImagesContainerTag.id = name + 'AreaImagesContainer';
+		selectionAreaImagesContainerTag.className = 'selectionAreaImagesContainer';
+
+		selectionAreaTag.appendChild(selectionAreaTextContainerTag);
+		selectionAreaTag.appendChild(selectionAreaImagesContainerTag);
+
+		selectionAreaTag.ondragover = function(event){
+			event.preventDefault();
+		}
+		selectionAreaTag.ondrop = imageDropAreaOnDrop(selectionAreaImagesContainerTag);
+
+		return selectionAreaTag;
+	}
+
+	let manipulatedAreaTag = createSelectionArea('manipulated', 'Manipulated');
+	let notManipulatedAreaTag = createSelectionArea('notManipulated', 'Not Manipulated');
+
+	contentTag.appendChild(notManipulatedAreaTag);
+	contentTag.appendChild(imagesContainerTag);
+	contentTag.appendChild(manipulatedAreaTag);
+
+	return contentTag;
+}
+
+function onSubmitButtonClick(resolve, jsonData){
+	return function (e) {
+		let imagesContainerTag = document.getElementById('imagesContainer');
+		document.getElementById('content').removeChild(imagesContainerTag);
+
+		let selectionAreasTags = [].slice.call(document.getElementsByClassName('selectionArea'));
+		selectionAreasTags.forEach(selectionAreaTag => selectionAreaTag.style.flex = 'auto');
+
+		let selectionAreasImagesContainers = [].slice.call(document.getElementsByClassName('selectionAreaImagesContainer'));
+		selectionAreasImagesContainers.forEach(selectionAreaImagesContainerTag => {
+			selectionAreaImagesContainerTag.style.flexWrap = 'wrap';
+			selectionAreaImagesContainerTag.style.alignContent = 'center';
+		});
+		let imagesContainerInSelectionAreasImagesContainers = selectionAreasImagesContainers.map(
+			selectionAreaImagesContainerTag => [].slice.call(selectionAreaImagesContainerTag.childNodes)
+		).flat();
+		imagesContainerInSelectionAreasImagesContainers.forEach(imageContainerTag => {
+			imageContainerTag.style.marginRight = '5px';
+
+			let imageName = imageContainerTag.childNodes[0].src.split('/').last();
+			let isManipulated = jsonData.filter(imageData => imageData.filename == imageName)[0].manipulated;
+			let isInManipulatedArea = imageContainerTag.parentNode.id == 'manipulatedAreaImagesContainer';
+			let isWrongAnswer = isManipulated != isInManipulatedArea;
+
+			let answerContainerTag = document.createElement('div');
+			let answerImageTag = document.createElement('img');
+			if(isWrongAnswer){
+				answerContainerTag.className = 'answerContainer wrongAnswerContainer';
+				answerImageTag.src = 'assets/close.png';
+			} else {
+				answerContainerTag.className = 'answerContainer rightAnswerContainer';
+				answerImageTag.src = 'assets/tick.png';
+			}
+			answerContainerTag.appendChild(answerImageTag);
+			imageContainerTag.appendChild(answerContainerTag);
+		});
+
+		let selectionAreaTextContainers = [].slice.call(document.getElementsByClassName('selectionAreaTextContainer'))
+		selectionAreaTextContainers.forEach(el => el.parentNode.removeChild(el))
+
+		resolve();
+	}
+}
+
+async function createPageManipulated(jsonData, nbImages){
+	let pageState = {
+		'images': {
+			'inStartingArea': {},
+			'inManipulatedArea': {},
+			'inNotManipulatedArea': {},
+		}
+	};
+
+	return new Promise(async function(resolve, reject) {
 		let globalContainer = document.getElementById("globalContainer");
 		while (globalContainer.firstChild) {
 			globalContainer.removeChild(globalContainer.firstChild);
 		}
 
-		let headerTag = document.createElement("div");
-		headerTag.className = "header";
-		let questionTag = document.createElement("p");
-		questionTag.innerText = "Which one have been manipulated?"
-		headerTag.appendChild(questionTag);
+		let headerTag = createHeader();
 		globalContainer.appendChild(headerTag);
 
-		let footerTag = document.createElement("div");
-		footerTag.className = "footer";
-		let submitButton = document.createElement("button");
-		submitButton.innerText = "Submit";
-		submitButton.addEventListener('click', function (e) {
-			/* TODO
-			- gradient + bouger les images suivant le score intermediaire
-			document.body.style.backgroundImage = "linear-gradient(to right, green, rgb(78, 90, 102), red)";
-			- 
-			- puis scores
-			 */
-			// let imgQty = document.getElementsByClassName("imagesContainer")[0].childNodes.length;
-			let currentScore = 0;
-
-			Array.from(document.getElementsByClassName("imagesContainer")[0].childNodes).forEach(el => {
-				let isSelected = !!el.selectedImage;
-				let isManipulated = !!el.manipulated;
-				currentScore += (isSelected == isManipulated);
-
-				let x = randInt(0, imagesContainerTag.clientWidth);
-				let y = randInt(0, imagesContainerTag.clientHeight);
-				animatePos(el, x, y, 1);
-			});
-
-			scores.push(currentScore);
-			// shuffleImages(currentScore, imgQty);
-
-			document.getElementById('content').removeChild(document.getElementsByClassName('imagesContainer')[0]);
-			let selectionAreas = [].slice.call(document.getElementsByClassName('selectionArea'));
-			selectionAreas.forEach(selectionAreaTag => selectionAreaTag.style.flex = 'auto')
-			let selectionAreasImagesContainers = [].slice.call(document.getElementsByClassName('selectionAreaImagesContainer'));
-			selectionAreasImagesContainers.forEach(selectionAreaImagesContainerTag => {
-				selectionAreaImagesContainerTag.style.flexWrap = 'wrap';
-				selectionAreaImagesContainerTag.style.alignContent = 'center';
-			});
-			let imagesContainerInSelectionAreasImagesContainers = selectionAreasImagesContainers.map(
-				selectionAreaImagesContainerTag => [].slice.call(selectionAreaImagesContainerTag.childNodes)
-			).flat();
-			imagesContainerInSelectionAreasImagesContainers.forEach(imageContainerTag => {
-				imageContainerTag.style.marginRight = '5px';
-
-				let imageName = imageContainerTag.childNodes[0].src.split('/').last();
-				let isManipulated = data.filter(imageData => imageData.filename == imageName)[0].manipulated;
-				let isInManipulatedArea = imageContainerTag.parentNode.id == 'manipulatedAreaImagesContainer';
-				let isWrongAnswer = isManipulated != isInManipulatedArea;
-
-				if(isWrongAnswer){
-					let wrongAnswerContainerTag = document.createElement('div');
-					wrongAnswerContainerTag.className = 'wrongAnswerContainer';
-					let wrongAnswerImageTag = document.createElement('img');
-					wrongAnswerImageTag.src = 'assets/close.png';
-					wrongAnswerContainerTag.appendChild(wrongAnswerImageTag);
-					imageContainerTag.appendChild(wrongAnswerContainerTag);
-				}
-			});
-
-			let selectionAreaTextContainers = [].slice.call(document.getElementsByClassName('selectionAreaTextContainer'))
-			selectionAreaTextContainers.forEach(el => el.parentNode.removeChild(el))
-
-			resolve();
-		});
-		footerTag.appendChild(submitButton);
+		let footerTag = createFooter();
 		globalContainer.appendChild(footerTag);
 
-		let contentTag = document.createElement("div");
-		contentTag.id = 'content';
-
-		let imagesContainerTag = document.createElement("div");
-		imagesContainerTag.className = "imagesContainer";
-
-		function createSelectionArea(name, label) {
-			let selectionAreaTag = document.createElement('div');
-			selectionAreaTag.id = name + 'Area';
-			selectionAreaTag.className = 'selectionArea';
-			let selectionAreaTextContainerTag = document.createElement('div');
-			selectionAreaTextContainerTag.className = 'selectionAreaTextContainer';
-			let selectionAreaTextTag = document.createElement('p');
-			selectionAreaTextTag.innerText = label;
-			selectionAreaTextContainerTag.appendChild(selectionAreaTextTag);
-
-			let selectionAreaImagesContainerTag = document.createElement('div');
-			selectionAreaImagesContainerTag.id = name + 'AreaImagesContainer';
-			selectionAreaImagesContainerTag.className = 'selectionAreaImagesContainer';
-
-			selectionAreaTag.appendChild(selectionAreaTextContainerTag);
-			selectionAreaTag.appendChild(selectionAreaImagesContainerTag);
-
-			selectionAreaTag.ondragover = function(event){
-				event.preventDefault();
-			}
-			selectionAreaTag.ondrop = imageDropAreaOnDrop(selectionAreaImagesContainerTag);
-
-			return selectionAreaTag;
-		}
-
-		let manipulatedAreaTag = createSelectionArea('manipulated', 'Manipulated');
-		let notManipulatedAreaTag = createSelectionArea('notManipulated', 'Not Manipulated');
-
-		contentTag.appendChild(notManipulatedAreaTag);
-		contentTag.appendChild(imagesContainerTag);
-		contentTag.appendChild(manipulatedAreaTag);
-
+		let contentTag = createContent();
 		globalContainer.insertBefore(contentTag, footerTag);
 
-		let imagesUrlList = getListUrlImages(data, nbManipulatedImages, nbNotManipulatedImages);
-		createImageCollageLayout(imagesContainerTag, imagesUrlList);
+		let minimalAmountOfImagesPerTypeRatio = 0.2;
+		let {nbManipulatedImages, nbNotManipulatedImages} = getNbImages(nbImages, minimalAmountOfImagesPerTypeRatio);
+		let imagesUrlList = getListUrlImages(jsonData, nbManipulatedImages, nbNotManipulatedImages);
+		await createImageCollageLayout(imagesUrlList, jsonData, pageState);
+
+		let submitButton = document.getElementById('submitButton');
+		submitButton.addEventListener('click', onSubmitButtonClick(resolve, jsonData));
 	});
 }
 
@@ -219,7 +235,7 @@ function imageDropAreaOnDrop(selectionAreaImagesContainerTag){
 			.getData('imageId');
 
 		let imageTag = document.getElementById(imageId);
-		let imagesContainerTag = document.getElementsByClassName('imagesContainer')[0];
+		let imagesContainerTag = document.getElementById('imagesContainer');
 		imagesContainerTag.removeChild(imageTag);
 
 		let imageContainerTag = document.createElement('div');
@@ -242,53 +258,57 @@ function getListUrlImages(data, nbManipulatedImages, nbNotManipulatedImages){
 	let manipulatedImages = data.filter(imageData => imageData.manipulated);
 	let notManipulatedImages = data.filter(imageData => !imageData.manipulated);
 
-	shuffle(manipulatedImages);
-	shuffle(notManipulatedImages);
+	manipulatedImages = shuffle(manipulatedImages);
+	notManipulatedImages = shuffle(notManipulatedImages);
 
 	let listImages = manipulatedImages.slice(0, nbManipulatedImages).concat(notManipulatedImages.slice(0, nbNotManipulatedImages));
-	shuffle(listImages);
+	listImages = shuffle(listImages);
 
 	return listImages.map(imageData => imageData.filename);
 }
 
-function getImagesSize(imagesSrc){
+async function getImagesSize(imagesSrc){
 	return new Promise((resolve, reject) => {
-		let nbImagesLoaded = 0;
-		let totalImages = imagesSrc.length;
-		let imagesData = [];
-		function imageLoaded() {
-			nbImagesLoaded++;
-			if (nbImagesLoaded == totalImages) {
-				allImagesLoaded();
-			}
-		}
-
-		function allImagesLoaded(){
-			resolve(imagesData.map(imageData => ({
-				'url': imageData.url,
-				'width': imageData.imageTag.width,
-				'height': imageData.imageTag.height
-			})));
-		}
-
-		for(let imageSrc of imagesSrc){
+		let imagesLoadingPromises = imagesSrc.map(imageSrc => {
 			let imageTag = document.createElement("img");
-			imageTag.onload = function(){
-				imageLoaded();
-			};
 			let url = 'images/' + imageSrc;
-			imageTag.src = url;
-			imagesData.push({
-				'url': url,
-				'imageTag': imageTag
+
+			let imageLoadingPromise = new Promise((resolve, reject) => {
+				imageTag.addEventListener("load", function(){
+					resolve({imageSrc, imageTag});
+				});
 			});
-		}
+
+			imageTag.src = url;
+
+			return imageLoadingPromise;
+		});
+
+		Promise.all(imagesLoadingPromises).then(imagesData => {
+			let result = imagesData.reduce(function(map, imageData) {
+				map[imageData.imageSrc] = {
+					'width': imageData.imageTag.width,
+					'height': imageData.imageTag.height
+				};
+				return map;
+			}, {});
+
+			resolve(result);
+		});
 	});
 }
 
-function createImageCollageLayout(imagesContainerTag, imagesSrc){
-	let nbImagesColumns = Math.ceil(Math.sqrt(imagesSrc.length));
-	let nbImagesRows = Math.ceil(imagesSrc.length / nbImagesColumns);
+function getNbRowAndColumnsFromCellsAmount(cellsAmount){
+	let nbImagesColumns = Math.ceil(Math.sqrt(cellsAmount));
+	let nbImagesRows = Math.ceil(cellsAmount / nbImagesColumns);
+
+	return {nbImagesColumns, nbImagesRows};
+}
+
+async function createImageCollageLayout(imagesSrc, jsonData, pageState){
+	let imagesContainerTag = document.getElementById('imagesContainer');
+
+	let {nbImagesColumns, nbImagesRows} = getNbRowAndColumnsFromCellsAmount(imagesSrc.length);
 
 	let maxHeightRow = 200;
 	let maxWidthColumn = 200;
@@ -303,35 +323,63 @@ function createImageCollageLayout(imagesContainerTag, imagesSrc){
 
 	let leftMargin = (imagesContainerTag.clientWidth - widthRows) / 2;
 
-	getImagesSize(imagesSrc).then(imagesSize => {
-		let imagesTags = imagesSize.map((imageSize, i) => {
-			let columnIdx = i % nbImagesColumns;
-			let rowIdx = Math.floor(i / nbImagesColumns);
+	let imagesSize = await getImagesSize(imagesSrc);
 
-			let imageId = 'image' + i;
-
-			let imageTag = document.createElement("img");
-			imageTag.id = imageId
-			imageTag.src = imageSize.url;
-			imageTag.style.position = 'absolute';
-			let x = columnIdx * (widthColumn + gapWidth) + leftMargin;
-			let y = rowIdx * (heightRow + gapWidth);
-			let imageSizeClamped = clampImageSize(imageSize.width, imageSize.height, widthColumn, heightRow);
-			imageTag.style.left = x + (widthColumn - imageSizeClamped.width) / 2 + 'px';
-			imageTag.style.top = y + (heightRow - imageSizeClamped.height) / 2 + 'px';
-			imageTag.style.maxWidth = widthColumn + 'px';
-			imageTag.style.maxHeight = heightRow + 'px';
-
-			imageTag.ondragstart = function(event) {
-				event.dataTransfer.setData('imageId', imageId);
-			}
-
-			return imageTag;
-		});
-		imagesTags.forEach(imageTag => imagesContainerTag.appendChild(imageTag));
+	Object.entries(imagesSize).forEach(([imageSrc, imageSize], imageIdx) => {
+		let imageTag = createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, widthColumn, heightRow, gapWidth, leftMargin);
+		pageState['images']['inStartingArea'][imageSrc] = {
+			'tag': imageTag,
+			'manipulated': jsonData.filter(imageData => imageData.filename == imageSrc)[0]['manipulated'],
+		};
+		imagesContainerTag.appendChild(imageTag);
 	});
 }
 
+function createImageTagInGrid(imageSrc, imageSize, imageIdx, nbImagesColumns, widthColumn, heightRow, gapWidth, leftMargin){
+	let columnIdx = imageIdx % nbImagesColumns;
+	let rowIdx = Math.floor(imageIdx / nbImagesColumns);
+
+	let imageId = 'image' + imageIdx;
+
+	let imageTag = document.createElement("img");
+	imageTag.id = imageId
+	imageTag.src = '/images/' + imageSrc;
+	let x = columnIdx * (widthColumn + gapWidth) + leftMargin;
+	let y = rowIdx * (heightRow + gapWidth);
+	let imageSizeClamped = clampImageSize(imageSize.width, imageSize.height, widthColumn, heightRow);
+	imageTag.style.position = 'absolute';
+	imageTag.style.left = x + (widthColumn - imageSizeClamped.width) / 2 + 'px';
+	imageTag.style.top = y + (heightRow - imageSizeClamped.height) / 2 + 'px';
+	imageTag.style.maxWidth = widthColumn + 'px';
+	imageTag.style.maxHeight = heightRow + 'px';
+
+	imageTag.ondragstart = function(event) {
+		event.dataTransfer.setData('imageId', imageId);
+	}
+
+	return imageTag;
+}
+
+/**
+ * Clamps width and height to fit in a target width and height.
+ * 
+ * Clamps imageWidth and imageHeight to keep aspect ratio and have both of them inferior or equal to
+ * respectively targetWidth and targetHeight.
+ * 
+ * Example :
+ *                  _ _ _ _ _
+ * imageWidth   6  |         |
+ * imageHeight  3  |         |
+ *                 |_ _ _ _ _|
+ *                     _ _
+ * targetWidth  2     |   |
+ * targetHeight 2     |_ _|
+ * 
+ * finalWidth   2      _ _
+ * finalHeight  1     |_ _|
+ * 
+ * @returns {object} An object with both width and height properties.
+ */
 function clampImageSize(imageWidth, imageHeight, targetWidth, targetHeight){
 	let widthRatio = imageWidth / targetWidth;
 	let widthRatioFixedImageHeight = imageHeight / widthRatio;
@@ -350,46 +398,43 @@ function clampImageSize(imageWidth, imageHeight, targetWidth, targetHeight){
 	}
 }
 
-function createImagesTags(imageArray, imagesContainerTag){
-	createImageCollageLayout(imagesContainerTag, imageArray.map(i => i.filename));
-}
-
-function loadData() {
+async function loadJson(url) {
 	return new Promise((resolve, reject) => {
-		fetch("data/data.json")
+		fetch(url)
 		.then(response => response.json())
 		.then(data => resolve(data.images));
 	});
 }
 
-function timeout(delay){
+async function loadData() {
+	return await loadJson("data/data.json");
+}
+
+async function timeout(delay){
 	return new Promise((resolve, reject) => {
 		setTimeout(() => resolve(), delay);
 	})
 }
 
-function main(){
+async function main(){
 	if (!Array.prototype.last){
 		Array.prototype.last = function(){
 			return this[this.length - 1];
 		};
 	};
 
-	loadData().then(data => {
-		createPageManipulated(data, 2)
-		.then(() => timeout(2000))
-		.then(() => createPageManipulated(data, 4))
-		.then(() => timeout(2000))
-		.then(() => createPageManipulated(data, 9))
-		.then(() => timeout(2000))
-		.then(() => createPageManipulated(data, 16))
-		.then(() => timeout(2000))
-		.then(
-			// TODO
-			// - display final score in a cool way
-			() => alert('DONE')
-		);
-	});
+	let data = await loadData();
+
+	await createPageManipulated(data, 2);
+	await timeout(2000);
+	await createPageManipulated(data, 4);
+	await timeout(2000);
+	await createPageManipulated(data, 9);
+	await timeout(2000);
+	await createPageManipulated(data, 16);
+	await timeout(2000);
+
+	alert('DONE');
 }
 
 main();
