@@ -410,6 +410,45 @@ async function loadData() {
 	return await loadJson("data/data.json");
 }
 
+function createGraphPage(data) {
+	let gContainer = document.getElementById('globalContainer');
+	// Relevant data
+	let nodes = data.nodes;
+	let links = data.links;
+
+	// Document layout
+	let header = document.createElement('div');
+	header.id = "header";
+	let pHeader = document.createElement('p');
+	pHeader.innerText = "Construction graph";
+	header.appendChild(pHeader);
+	gContainer.appendChild(header);
+
+	let footer = document.createElement('div');
+	footer.id = "footer";
+	let fButton = document.createElement('button');
+	fButton.innerText = "Next";
+	footer.appendChild(fButton);
+	gContainer.appendChild(footer);
+
+	// Building graph div
+	let gDiv = document.createElement('div');
+	gDiv.id = "graphDiv";
+	gContainer.insertBefore(gDiv, footer);
+	let gWidth = gDiv.offsetWidth;
+
+	// Fillin' it
+
+}
+
+function loadGraph() {
+	return new Promise((resolve, reject) => {
+		fetch("data/graph.json")
+		.then(r => r.json())
+		.then(d => resolve({"nodes":d.nodes, "links":d.links}))
+	});
+}
+
 async function timeout(delay){
 	return new Promise((resolve, reject) => {
 		setTimeout(() => resolve(), delay);

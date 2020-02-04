@@ -29,6 +29,10 @@ body {
 
 #header p {
 	font-size: 40px;
+}
+
+#header p {
+	margin: 0;
 	text-align: center;
 	color: #FFF;
 }
@@ -119,9 +123,11 @@ body {
 	filter: invert(1);
 }
 
-#content #imagesContainer {
-	flex: auto;
-	position: relative;
+#graphDiv {
+	margin-left: 15%;
+	width: 70%;
+	border: solid 1px white;
+	padding-top: 10px; /* TBR */
 }
 
 #footer {
