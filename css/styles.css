@@ -29,6 +29,10 @@ body {
 
 #header p {
 	font-size: 40px;
+}
+
+#header p {
+	margin: 0;
 	text-align: center;
 	color: #FFF;
 }
@@ -122,6 +126,13 @@ body {
 #content #imagesContainer {
 	flex: auto;
 	position: relative;
+}
+
+#graphDiv {
+	margin-left: 15%;
+	width: 70%;
+	height: 100%;
+	border: solid 1px white;
 }
 
 #footer {

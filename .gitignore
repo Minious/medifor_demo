@@ -1,1 +1,8 @@
+# Node related files
 node_modules/
+
+# MacOS related files
+.DS_Store
+
+# Confidential data
+graph/*

@@ -445,10 +445,238 @@ async function loadData() {
 	return await loadJson("data/data.json");
 }
 
+function buildGraphJson(nodes, edges) {
+	res = {}
+	res.nodes = []
+	let ni = 0;
+	for (let ni=0; ni<nodes.length; ni++) {
+		let node = nodes[ni];
+		res.nodes.push({
+			id: 'n'+ni,
+			label: node.file,
+			x: -node.xpos / 10,
+			y: node.ypos / 10,
+			size: 200,
+			type: 'image',
+			url: '/graph/'+node.file,
+			scale: 100,
+		});
+	}
+	res.edges = [];
+	for (let ei = 0; ei<edges.length; ei++) {
+		let edge = edges[ei];
+		res.edges.push({
+			id: 'e'+ei,
+			source: 'n'+edge.source,
+			target: 'n'+edge.target,
+			label: edge.op,
+			type: 'arrow',
+			arrow: 'target',
+			size: 1,
+		});
+	}
+	return res;
+}
+
+async function createGraphPage(data) {
+	let gContainer = document.getElementById('globalContainer');
+
+	// Document layout
+	let header = document.createElement('div');
+	header.id = "header";
+	let pHeader = document.createElement('p');
+	pHeader.innerText = "Construction graph";
+	header.appendChild(pHeader);
+	gContainer.appendChild(header);
+
+	let footer = document.createElement('div');
+	footer.id = "footer";
+	let fButton = document.createElement('button');
+	fButton.innerText = "Next";
+	footer.appendChild(fButton);
+	gContainer.appendChild(footer);
+
+	// Building graph div
+	let gDiv = document.createElement('div');
+	gDiv.id = "graphDiv";
+	gContainer.insertBefore(gDiv, footer);
+	let gWidth = gDiv.offsetWidth;
+
+	/*
+	 *  Interesting data
+	 *  |- nodes
+	 *  |  |- xpos: int
+	 *  |  |- ypos: int
+	 *  |  |- file: str
+	 *  |  +- nodetype: base/interim/final/donor
+	 *  |
+	 *  +- links
+	 *     |- source: int
+	 *     |- target: int
+	 *     |- op: str
+	 *     +- linkcolor: str (fmt '%d %d %d'), optional
+	 */
+	let nodes = data.nodes;
+	let links = data.links;
+	let graphData = buildGraphJson(nodes, links);
+	for (let node of graphData.nodes) {
+		if (node.url.includes('.cr2') || node.url.includes('.nef')) {
+			node.url = node.url.slice(0, node.url.length-3) + 'png';
+		}
+	}
+	/*/ TBR 
+	graphData = {
+		nodes: [
+			{
+				id: 'n0',
+				label: '',
+				x: Math.random(),
+				y: Math.random(),
+				size: 200,
+				type: 'image',
+				url: "/graph/01f18b7ea206760484fa13833c59feb8.png"
+			},
+			{
+				id: 'n1',
+				label: '',
+				x: Math.random(),
+				y: Math.random(),
+				size: 200,
+				type: 'image',
+				url: '/graph/blur.png'
+			}],
+		edges: [
+			{
+				id: 'e0',
+				source: 'n0',
+				target: 'n1',
+				label: 'mdr'
+			}
+		]
+	}
+	// TBR */
+
+	// Rewriting renderer
+	sigma.utils.pkg('sigma.canvas.nodes');
+	sigma.canvas.nodes.image = (function() {
+		var _cache = {},
+			_loading = {},
+			_callbacks = {};
+		// Return the renderer itself:
+		var renderer = function(node, context, settings) {
+			var args = arguments,
+				prefix = settings('prefix') || '',
+				size = node[prefix + 'size'],
+				color = node.color || settings('defaultNodeColor'),
+				url = node.url;
+			if (_cache[url]) {
+				context.save();
+				// Draw the image
+				context.drawImage(
+					_cache[url],
+					node[prefix + 'x'] - size,
+					node[prefix + 'y'] - size,
+					2 * size,
+					2 * size
+				);
+				// Quit the "clipping mode":
+				context.restore();
+			} else {
+				sigma.canvas.nodes.image.cache(url);
+				sigma.canvas.nodes.def.apply(
+					sigma.canvas.nodes,
+					args
+				);
+			}
+		};
+		// Let's add a public method to cache images, to make it possible to
+		// preload images before the initial rendering:
+		renderer.cache = function(url, callback) {
+			if (callback)
+				_callbacks[url] = callback;
+			if (_loading[url])
+				return;
+			var img = new Image();
+			img.onload = function() {
+				_loading[url] = false;
+				_cache[url] = img;
+				if (_callbacks[url]) {
+					_callbacks[url].call(this, img);
+					delete _callbacks[url];
+				}
+			};
+			_loading[url] = true;
+			img.src = url;
+		};
+		return renderer;
+	})();
+
+	// Drawing canvas
+	let loaded = 0;
+	let images = [];
+	console.log(graphData);
+	graphData.nodes.forEach(node => images.push(node.url));
+	
+	images.forEach(function(url) {
+		sigma.canvas.nodes.image.cache(
+			url,
+			function() {
+				if (++loaded === images.length) {
+					s = new sigma({
+						graph: graphData,
+						renderer: {
+							container: gDiv,
+							type: 'canvas'
+						},
+						settings: {
+							defaultLabelColor: '#fff',
+							defaultNodeColor: '#fff',
+							labelColor: '#fff',
+							minNodeSize: 8,
+							maxNodeSize: 20,
+							maxEdgeSize: 1,
+						}
+					});
+				}
+			}
+		);
+	});
+	/*
+	s = new sigma({
+		graph: graphData,
+		renderer: {
+			container: gDiv,
+			type: 'canvas'
+		},
+		settings: {
+			defaultLabelColor: '#fff',
+			defaultNodeColor: '#fff',
+			labelColor: '#fff',
+			enableEdgeHovering: false
+		}
+	});
+	*/
+}
+
+async function loadGraph() {
+	return new Promise((resolve, reject) => {
+		fetch("data/graph.json")
+		.then(r => r.json())
+		.then(d => resolve({"nodes":d.nodes, "links":d.links}))
+	});
+}
+
 async function timeout(delay){
 	return new Promise((resolve, reject) => {
 		setTimeout(() => resolve(), delay);
 	})
+}
+
+async function cleanPage() {
+	let gContainer = document.getElementById('globalContainer');
+	gContainer.removeChild(document.getElementById('header'));
+	gContainer.removeChild(document.getElementById('content'));
+	gContainer.removeChild(document.getElementById('footer'));
 }
 
 async function main(){
@@ -458,8 +686,8 @@ async function main(){
 		};
 	};
 
+	// Guessing game
 	let data = await loadData();
-
 	await createPageManipulated(data, 2);
 	await timeout(2000);
 	await createPageManipulated(data, 4);
@@ -469,7 +697,10 @@ async function main(){
 	await createPageManipulated(data, 16);
 	await timeout(2000);
 
-	alert('DONE');
+	// Graph
+	await cleanPage();
+	data = await loadGraph();
+	await createGraphPage(data);
 }
 
 main();
