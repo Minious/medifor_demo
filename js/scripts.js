@@ -524,37 +524,6 @@ async function createGraphPage(data) {
 			node.url = node.url.slice(0, node.url.length-3) + 'png';
 		}
 	}
-	/*/ TBR 
-	graphData = {
-		nodes: [
-			{
-				id: 'n0',
-				label: '',
-				x: Math.random(),
-				y: Math.random(),
-				size: 200,
-				type: 'image',
-				url: "/graph/01f18b7ea206760484fa13833c59feb8.png"
-			},
-			{
-				id: 'n1',
-				label: '',
-				x: Math.random(),
-				y: Math.random(),
-				size: 200,
-				type: 'image',
-				url: '/graph/blur.png'
-			}],
-		edges: [
-			{
-				id: 'e0',
-				source: 'n0',
-				target: 'n1',
-				label: 'mdr'
-			}
-		]
-	}
-	// TBR */
 
 	// Rewriting renderer
 	sigma.utils.pkg('sigma.canvas.nodes');
@@ -632,30 +601,16 @@ async function createGraphPage(data) {
 							defaultLabelColor: '#fff',
 							defaultNodeColor: '#fff',
 							labelColor: '#fff',
-							minNodeSize: 8,
+							minNodeSize: 10,
 							maxNodeSize: 20,
-							maxEdgeSize: 1,
+							minEdgeSize: 1,
+							maxEdgeSize: 3,
 						}
 					});
 				}
 			}
 		);
 	});
-	/*
-	s = new sigma({
-		graph: graphData,
-		renderer: {
-			container: gDiv,
-			type: 'canvas'
-		},
-		settings: {
-			defaultLabelColor: '#fff',
-			defaultNodeColor: '#fff',
-			labelColor: '#fff',
-			enableEdgeHovering: false
-		}
-	});
-	*/
 }
 
 async function loadGraph() {
@@ -686,7 +641,7 @@ async function main(){
 		};
 	};
 
-	// Guessing game
+	/* Guessing game
 	let data = await loadData();
 	await createPageManipulated(data, 2);
 	await timeout(2000);
@@ -697,9 +652,9 @@ async function main(){
 	await createPageManipulated(data, 16);
 	await timeout(2000);
 
-	// Graph
-	await cleanPage();
-	data = await loadGraph();
+	// Graph */
+	//await cleanPage();
+	let data = await loadGraph();
 	await createGraphPage(data);
 }
 
