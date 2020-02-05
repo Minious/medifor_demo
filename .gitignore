@@ -1,0 +1,5 @@
+# MacOS related files
+.DS_Store
+
+# Confidential data
+graph/*
