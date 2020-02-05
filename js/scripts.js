@@ -78,12 +78,12 @@ function getNbImages(nbImages, offset){
  * 
  * @returns {HTMLDivElement} The header div tag
  */
-function createHeader(){
+function createHeader(headerText){
 	let headerTag = document.createElement("div");
 	headerTag.id = "header";
 
 	let questionTag = document.createElement("p");
-	questionTag.innerText = "Which ones have been manipulated?";
+	questionTag.innerText = headerText;
 
 	headerTag.appendChild(questionTag);
 
@@ -95,13 +95,13 @@ function createHeader(){
  * 
  * @returns {HTMLDivElement} The footer div tag
  */
-function createFooter(){
+function createFooter(footerText){
 	let footerTag = document.createElement("div");
 	footerTag.id = "footer";
 
 	let submitButton = document.createElement("button");
 	submitButton.id = 'submitButton';
-	submitButton.innerText = "Submit";
+	submitButton.innerText = footerText;
 
 	footerTag.appendChild(submitButton);
 
@@ -204,16 +204,15 @@ async function createPageManipulated(jsonData, nbImages){
 		}
 	};
 
+	cleanPage();
+
 	return new Promise(async function(resolve, reject) {
 		let globalContainer = document.getElementById("globalContainer");
-		while (globalContainer.firstChild) {
-			globalContainer.removeChild(globalContainer.firstChild);
-		}
 
-		let headerTag = createHeader();
+		let headerTag = createHeader("Which ones have been manipulated?");
 		globalContainer.appendChild(headerTag);
 
-		let footerTag = createFooter();
+		let footerTag = createFooter("Submit");
 		globalContainer.appendChild(footerTag);
 
 		let contentTag = createContent(pageState);
@@ -479,21 +478,15 @@ function buildGraphJson(nodes, edges) {
 }
 
 async function createGraphPage(data) {
+	cleanPage();
+
 	let gContainer = document.getElementById('globalContainer');
 
 	// Document layout
-	let header = document.createElement('div');
-	header.id = "header";
-	let pHeader = document.createElement('p');
-	pHeader.innerText = "Construction graph";
-	header.appendChild(pHeader);
+	let header = createHeader("Construction graph");
 	gContainer.appendChild(header);
 
-	let footer = document.createElement('div');
-	footer.id = "footer";
-	let fButton = document.createElement('button');
-	fButton.innerText = "Next";
-	footer.appendChild(fButton);
+	let footer = createFooter("Next");
 	gContainer.appendChild(footer);
 
 	// Building graph div
@@ -627,11 +620,11 @@ async function timeout(delay){
 	})
 }
 
-async function cleanPage() {
-	let gContainer = document.getElementById('globalContainer');
-	gContainer.removeChild(document.getElementById('header'));
-	gContainer.removeChild(document.getElementById('content'));
-	gContainer.removeChild(document.getElementById('footer'));
+function cleanPage() {
+	let globalContainer = document.getElementById('globalContainer');
+	while (globalContainer.firstChild) {
+		globalContainer.removeChild(globalContainer.firstChild);
+	}
 }
 
 async function main(){
@@ -641,7 +634,7 @@ async function main(){
 		};
 	};
 
-	/* Guessing game
+	// Guessing game
 	let data = await loadData();
 	await createPageManipulated(data, 2);
 	await timeout(2000);
@@ -653,8 +646,8 @@ async function main(){
 	await timeout(2000);
 
 	// Graph */
-	//await cleanPage();
-	let data = await loadGraph();
+	await cleanPage();
+	data = await loadGraph();
 	await createGraphPage(data);
 }
 
